@@ -1,10 +1,14 @@
 <?php 
 
+$apikeys = [
+    "api"
+];
+
 // connect php to postgreSQL Database using PDO
 
 $host='localhost';
-$db = '';
-$username = '';
+$db = 'weathersafe';
+$username = 'postgres';
 $password = '';
 
 
@@ -90,15 +94,15 @@ try{
                     <td><button onClick="populatesFormFields(this)" class="btn btn-outline-primary">Edit</button></td>
                     <td>
                         <form id="deleteBtnForm" method="post">
-                            <input type="hidden" name="fieldID" id="fieldID">
-                            <button type="submit" id="deleteBtn" class="btn btn-outline-danger" style="border-color: #d5a3a8; color: #b76870;" disabled>Delete</button>
+                            <input type="hidden" name="fieldID">
+                            <input type="hidden" name="delete" value="delete">
+                            <button type="submit" class="btn btn-outline-danger" style="border-color: #d5a3a8; color: #b76870;" disabled>Delete</button>
                         </form>
                     </td>
                 </tr>
                 <?php endwhile; ?>
             </tbody>
         </table>
-        <p class="demo">This is jquery demo</p>
     </div>
 
     
@@ -140,13 +144,13 @@ try{
             }
         }
 
-        if(isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Delete Fields") {
+        if(isset($_POST["delete"])) {
 
             $fieldID = $_POST['fieldID'];
 
             $statement->closeCursor();
 
-            $delete_field = "delete * from \"Fields\" 
+            $delete_field = "delete from \"Fields\" 
             where id = $fieldID"; 
 
             $statement = $conn->query($delete_field);
@@ -169,22 +173,24 @@ try{
 
         function selectRow(btn) {
             console.log(btn)
-            const hiddenFieldID = document.querySelector('#fieldID')
-            const disableDeleteBtn = document.querySelector('#deleteBtn')
-            const deleteBtnForm = document.querySelector('#deleteBtnForm')
-
-            const deleteBtn = document.createElement("BUTTON");
-
-            hiddenFieldID.attributes.name.value = btn.parentElement.children[0].innerText
-            disableDeleteBtn.remove()
+            const hiddenFieldID = btn.parentElement.querySelector('input')
+            const disabledBtn = btn.parentElement.querySelector('td:nth-of-type(5)').children[0].children[1]
             
-            deleteBtn.classList.add("btn", "btn-outline-danger")
-            deleteBtn.id = "deleteBtn";
-            deleteBtn.innerText = "Delete";
+            hiddenFieldID.value = btn.parentElement.querySelector('td:nth-of-type(1)').innerText
+            console.log(btn.parentElement.querySelector('td:nth-of-type(1)').innerText)
 
-            deleteBtnForm.appendChild(deleteBtn);
+            // true == exists
+            if(disabledBtn.attributes.getNamedItem('disabled') !== null) {
+
+                disabledBtn.attributes.removeNamedItem('disabled')
+                disabledBtn.style.removeProperty('border-color')
+                disabledBtn.style.removeProperty('color')
+            } else {
+                disabledBtn.setAttribute("disabled", "")
+                disabledBtn.style.borderColor = "#d5a3a8"
+                disabledBtn.style.color = "#b76870"
+            }
         }
-        
     </script>
 </body>
 </html>
