@@ -88,12 +88,12 @@ try{
                 <!-- When using pdo::fetch_assoc, the pdostatement returns an array indexed by column name  -->
                 <?php while($row = $statement->fetch(PDO::FETCH_ASSOC)) : ?>
                 <tr>
-                    <td onClick="selectRow(this)"><?php echo htmlspecialchars($row['id']); ?></td>
+                    <td onClick="onIdClicked(this)"><?php echo htmlspecialchars($row['id']); ?></td>
                     <td><?php echo htmlspecialchars($row['NumberOfTrees']); ?></td>
                     <td><?php echo htmlspecialchars($row['AgeOfTrees']); ?>
                     <td><button onClick="populatesFormFields(this)" class="btn btn-outline-primary">Edit</button></td>
                     <td>
-                        <form id="deleteBtnForm" method="post">
+                        <form method="post">
                             <input type="hidden" name="fieldID">
                             <input type="hidden" name="delete" value="delete">
                             <button type="submit" class="btn btn-outline-danger" style="border-color: #d5a3a8; color: #b76870;" disabled>Delete</button>
@@ -159,38 +159,63 @@ try{
                 die("Error executing query: $edit_field");
             }
         }
-    ?>
+        ?>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="text/javascript">
 
         function populatesFormFields(btn) {
             const buttonType = btn.innerText;
             const fieldsList = btn.parentElement.parentElement.getElementsByTagName("td");
+
             document.getElementById('fieldID').value = fieldsList[0].innerText
             document.getElementById('numbtrees').value = fieldsList[1].innerText            
             document.getElementById('agetrees').value = fieldsList[2].innerText            
         }
 
-        function selectRow(btn) {
-            console.log(btn)
-            const hiddenFieldID = btn.parentElement.querySelector('input')
-            const disabledBtn = btn.parentElement.querySelector('td:nth-of-type(5)').children[0].children[1]
-            
-            hiddenFieldID.value = btn.parentElement.querySelector('td:nth-of-type(1)').innerText
-            console.log(btn.parentElement.querySelector('td:nth-of-type(1)').innerText)
 
-            // true == exists
-            if(disabledBtn.attributes.getNamedItem('disabled') !== null) {
+        
 
-                disabledBtn.attributes.removeNamedItem('disabled')
-                disabledBtn.style.removeProperty('border-color')
-                disabledBtn.style.removeProperty('color')
+        function onIdClicked(idEl) {
+            const deleteBtn = idEl.parentElement.querySelector('td:nth-of-type(5)').children[0].children[2]
+            const hiddenFieldID = idEl.parentElement.querySelector('input')
+       
+            setFieldID(idEl);
+            toggleBtn(deleteBtn);
+        }
+
+        function toggleBtn(btn) {
+            if( btn.attributes.getNamedItem('disabled') !== null) {
+                btn.attributes.removeNamedItem('disabled')
+                btn.style.removeProperty('border-color')
+                btn.style.removeProperty('color')
             } else {
-                disabledBtn.setAttribute("disabled", "")
-                disabledBtn.style.borderColor = "#d5a3a8"
-                disabledBtn.style.color = "#b76870"
+                btn.setAttribute("disabled", "")
+                btn.style.borderColor = "#d5a3a8"
+                btn.style.color = "#b76870"
             }
         }
+
+        function setFieldID(id) {
+            const hiddenFieldID = id.parentElement.querySelector('input')
+            hiddenFieldID.value = id.parentElement.querySelector('td:nth-of-type(1)').innerText
+        }
+
+        // function deleteRow() {
+
+        //     axios.post('.', {
+        //         fieldID: '',
+        //         delete: 'Flintstone'
+        //     })
+        //     .then(function (response) {
+        //         console.log(response);
+        //     })
+        //     .catch(function (error) {
+        //         console.log(error);
+        //     });
+        // }
+        // document.getElementById('test').parentElement.childNodes[8].children[0].children[2]
+        
     </script>
 </body>
 </html>
