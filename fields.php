@@ -1,8 +1,10 @@
 <?php 
 
 $apikeys = [
-    "api"
+    "api", 
+    "api2"
 ];
+
 
 // connect php to postgreSQL Database using PDO
 
@@ -14,26 +16,7 @@ $password = '';
 
 $dsn = "pgsql:host=$host;port=5432;dbname=$db;user=$username;password=$password";
 
-// get all fields
-$get_fields = "select * 
-                from (select * from \"Fields\" f order by \"id\" desc limit 8) as foo
-                order by \"id\" asc;";
-
-try{
-    // create a PostgreSQL database connection
-    $conn = new PDO($dsn);
-
-    // returns an object containing the result set or false if failing to execute the query
-    $statement = $conn->query($get_fields);
-
-    if($statement == false) {
-        die("Error executing the query: $get_fields");
-    }
-
-}catch (PDOException $e){
-    // report error message
-    echo $e->getMessage();
-}
+$access = false;
 
 ?>
 
@@ -51,62 +34,52 @@ try{
 <body>
     <div class="container">
         <h1 class="display-4  text-center my-5">Very simple WeatherSafe Database CRUD APP</h1>
-        <h2 class="my-3">Your Form</h2>
-        <form class="row g-3" method="POST">
+        <small id="note">**provide your ApiKey to use the services</small>
+        
+        <form id="apiForm" class="row g-3 mt-1" method="GET">
             <div class="col-md-6">
-                <label for="numbtrees" class="form-label">Number of trees</label>
-                <input type="text" name="numberOfTrees" class="form-control" id="numbtrees">
+                <label for="apiKey" class="form-label">Api Key</label>
+                <input type="text" name="apikey" class="form-control" id="apiKey">
             </div>
-            <div class="col-md-6">
-                <label for="agetrees" class="form-label">Age of trees</label>
-                <input type="text" name="ageOfTrees" class="form-control" id="agetrees">
+            <div class="col-auto align-self-end">
+                <input type="submit" name="submit" class="btn btn-primary" id="getFields" value="Get Fields">
             </div>
-
-            <input type="hidden" name="fieldID" id="fieldID">
-            
-            <div class="col-auto mt-3">
-                <input type="submit" name="submit" class="btn btn-primary mb-3" value="Add Fields">
-            </div>
-            <div class="col-auto mt-3">
-                <input type="submit" name="submit" class="btn btn-primary mb-3" value="Save Fields">
-            </div>
-
+            <?php if(in_array($_GET["apikey"], $apikeys)) : ?>
+                <small class="text-success" id="success"><?php echo "{'success': 'Key provided'}" ?></small>
+            <?php $access= true;?>
+            <?php else : ?>
+                <?php if($_GET["submit"] == "Get Fields") : ?>
+                    <small class="text-danger" id="error"><?php echo "{'error': 'Invalid Key!'}" ?></small>
+                <?php endif; ?>
+            <?php endif; ?>
         </form>
-        <h2 class="my-3">The last 8 Fields</h2>
-        <table id="mytable" class="table table-striped table-bordered" style="width:300px;">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>NumberOfTrees</th>
-                    <th>AgeOfTrees</th>
-                    <th>Edit Rows</th>
-                    <th>Delete Rows</th>
-                </tr>
-            </thead>
-            <tbody>
-                
-                <!-- When using pdo::fetch_assoc, the pdostatement returns an array indexed by column name  -->
-                <?php while($row = $statement->fetch(PDO::FETCH_ASSOC)) : ?>
-                <tr>
-                    <td onClick="onIdClicked(this)"><?php echo htmlspecialchars($row['id']); ?></td>
-                    <td><?php echo htmlspecialchars($row['NumberOfTrees']); ?></td>
-                    <td><?php echo htmlspecialchars($row['AgeOfTrees']); ?>
-                    <td><button onClick="populatesFormFields(this)" class="btn btn-outline-primary">Edit</button></td>
-                    <td>
-                        <form method="post">
-                            <input type="hidden" name="fieldID">
-                            <input type="hidden" name="delete" value="delete">
-                            <button type="submit" class="btn btn-outline-danger" style="border-color: #d5a3a8; color: #b76870;" disabled>Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
 
-    
+        <!-- Loading the rest of the body content -->
     <?php
+        if($access) {
+
+            // get all fields
+            $get_fields = "select * 
+            from (select * from \"Fields\" f order by \"id\" desc limit 8) as foo
+            order by \"id\" asc;";
+
+            try{
+            // create a PostgreSQL database connection
+            $conn = new PDO($dsn);
+
+            // returns an object containing the result set or false if failing to execute the query
+            $statement = $conn->query($get_fields);
+
+            if($statement == false) {
+            die("Error executing the query: $get_fields");
+            }
+
+            }catch (PDOException $e){
+            // report error message
+            echo $e->getMessage();
+            }
+            require "main_fields.php"; 
+        }
         if(isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Add Fields") {
 
             $numberOfTrees = $_POST['numberOfTrees'];
@@ -159,10 +132,25 @@ try{
                 die("Error executing query: $edit_field");
             }
         }
-        ?>
+    ?>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="text/javascript">
+
+        removeApiForm();
+
+        function removeApiForm() {
+            const apiForm = document.getElementById('apiForm');
+            const note = document.getElementById('note');
+            const successMessage = document.getElementById('success');
+
+            if(successMessage) {
+                note.style.display = "none";
+                apiForm.style.display = "none";
+            }
+
+
+        }
 
         function populatesFormFields(btn) {
             const buttonType = btn.innerText;
@@ -200,6 +188,7 @@ try{
             const hiddenFieldID = id.parentElement.querySelector('input')
             hiddenFieldID.value = id.parentElement.querySelector('td:nth-of-type(1)').innerText
         }
+
 
         // function deleteRow() {
 
