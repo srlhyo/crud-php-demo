@@ -1,5 +1,5 @@
 <?php 
-
+// api ==== api endpoints /// noface
 $apikeys = [
     "api", 
     "api2"
@@ -44,7 +44,7 @@ $access = false;
             <div class="col-auto align-self-end">
                 <input type="submit" name="submit" class="btn btn-primary" id="getFields" value="Get Fields">
             </div>
-            <?php if(in_array($_GET["apikey"], $apikeys)) : ?>
+            <?php if(isset($_GET["apikey"]) && in_array($_GET["apikey"], $apikeys)) : ?>
                 <small class="text-success" id="success"><?php echo "{'success': 'Key provided'}" ?></small>
             <?php $access= true;?>
             <?php else : ?>
@@ -57,6 +57,64 @@ $access = false;
         <!-- Loading the rest of the body content -->
     <?php
         if($access) {
+            $isError = false;
+            $errorMessage = "";
+
+            if(isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Add Fields") {
+                
+                $numberOfTrees = $_POST['numberOfTrees'];
+                $ageOfTrees = $_POST['ageOfTrees'];
+
+                $statement->closeCursor();
+
+                $add_field = "insert into \"Fields\" (\"NumberOfTrees\", \"AgeOfTrees\")
+                values ('$numberOfTrees', '$ageOfTrees')"; 
+
+                $statement = $conn->query($add_field);
+
+                if($statement == false) {
+                    $isError = true;
+                    $errorMessage = "Dabase couldn't be reached";
+                }
+            }
+
+            if(isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Save Fields") {
+
+                $numberOfTrees = $_POST['numberOfTrees'];
+                $ageOfTrees = $_POST['ageOfTrees'];
+                $fieldID = $_POST['fieldID'];
+
+                $statement->closeCursor();
+
+                $edit_field = "update \"Fields\" 
+                set \"NumberOfTrees\" = $numberOfTrees,
+                \"AgeOfTrees\" = $ageOfTrees
+                where id = $fieldID"; 
+
+                $statement = $conn->query($edit_field);
+
+                if($statement == false) {
+                    $isError = true;
+                    $errorMessage = "Dabase couldn't be reached";
+                }
+            }
+
+            if(isset($_POST["delete"])) {
+                // create a PostgreSQL database connection
+                $fieldID = $_POST['fieldID'];
+
+                $delete_field = "delete from \"Fields\" 
+                where id = $fieldID";
+
+                $conn = new PDO($dsn);
+                $statement = $conn->query($delete_field);
+
+                if($statement == false) {
+                    $isError = true;
+                    $errorMessage = "Dabase couldn't be reached";
+                }
+                $statement->closeCursor();
+            }
 
             // get all fields
             $get_fields = "select * 
@@ -71,8 +129,11 @@ $access = false;
             $statement = $conn->query($get_fields);
 
             if($statement == false) {
-            die("Error executing the query: $get_fields");
+                $isError = true;
+                $errorMessage = "Dabase couldn't be reached";
             }
+            $data = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
 
             }catch (PDOException $e){
             // report error message
@@ -80,131 +141,9 @@ $access = false;
             }
             require "main_fields.php"; 
         }
-        if(isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Add Fields") {
-
-            $numberOfTrees = $_POST['numberOfTrees'];
-            $ageOfTrees = $_POST['ageOfTrees'];
-
-            $statement->closeCursor();
-
-            $add_field = "insert into \"Fields\" (\"NumberOfTrees\", \"AgeOfTrees\")
-            values ('$numberOfTrees', '$ageOfTrees')"; 
-
-            $statement = $conn->query($add_field);
-
-            if($statement == false) {
-                die("Error executing query: $add_field");
-            }
-        }
-
-        if(isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Save Fields") {
-
-            $numberOfTrees = $_POST['numberOfTrees'];
-            $ageOfTrees = $_POST['ageOfTrees'];
-            $fieldID = $_POST['fieldID'];
-
-            $statement->closeCursor();
-
-            $edit_field = "update \"Fields\" 
-            set \"NumberOfTrees\" = $numberOfTrees,
-            \"AgeOfTrees\" = $ageOfTrees
-            where id = $fieldID"; 
-
-            $statement = $conn->query($edit_field);
-
-            if($statement == false) {
-                die("Error executing query: $edit_field");
-            }
-        }
-
-        if(isset($_POST["delete"])) {
-
-            $fieldID = $_POST['fieldID'];
-
-            $statement->closeCursor();
-
-            $delete_field = "delete from \"Fields\" 
-            where id = $fieldID"; 
-
-            $statement = $conn->query($delete_field);
-
-            if($statement == false) {
-                die("Error executing query: $edit_field");
-            }
-        }
     ?>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script type="text/javascript">
-
-        removeApiForm();
-
-        function removeApiForm() {
-            const apiForm = document.getElementById('apiForm');
-            const note = document.getElementById('note');
-            const successMessage = document.getElementById('success');
-
-            if(successMessage) {
-                note.style.display = "none";
-                apiForm.style.display = "none";
-            }
-
-
-        }
-
-        function populatesFormFields(btn) {
-            const buttonType = btn.innerText;
-            const fieldsList = btn.parentElement.parentElement.getElementsByTagName("td");
-
-            document.getElementById('fieldID').value = fieldsList[0].innerText
-            document.getElementById('numbtrees').value = fieldsList[1].innerText            
-            document.getElementById('agetrees').value = fieldsList[2].innerText            
-        }
-
-
-        
-
-        function onIdClicked(idEl) {
-            const deleteBtn = idEl.parentElement.querySelector('td:nth-of-type(5)').children[0].children[2]
-            const hiddenFieldID = idEl.parentElement.querySelector('input')
-       
-            setFieldID(idEl);
-            toggleBtn(deleteBtn);
-        }
-
-        function toggleBtn(btn) {
-            if( btn.attributes.getNamedItem('disabled') !== null) {
-                btn.attributes.removeNamedItem('disabled')
-                btn.style.removeProperty('border-color')
-                btn.style.removeProperty('color')
-            } else {
-                btn.setAttribute("disabled", "")
-                btn.style.borderColor = "#d5a3a8"
-                btn.style.color = "#b76870"
-            }
-        }
-
-        function setFieldID(id) {
-            const hiddenFieldID = id.parentElement.querySelector('input')
-            hiddenFieldID.value = id.parentElement.querySelector('td:nth-of-type(1)').innerText
-        }
-
-
-        // function deleteRow() {
-
-        //     axios.post('.', {
-        //         fieldID: '',
-        //         delete: 'Flintstone'
-        //     })
-        //     .then(function (response) {
-        //         console.log(response);
-        //     })
-        //     .catch(function (error) {
-        //         console.log(error);
-        //     });
-        // }
-        // document.getElementById('test').parentElement.childNodes[8].children[0].children[2]
-        
-    </script>
+    <script type="text/javascript" src="main.js"></script>
 </body>
 </html>

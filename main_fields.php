@@ -1,6 +1,7 @@
         
         <h2 class="my-3">The last 8 Fields</h2>
         <small>***click on the id of the field you wish to delete</small>
+        <small><?php echo $isError ? $errorMessage : ""; ?></small>
         <table id="mytable" class="table table-striped table-bordered" style="width:300px;">
             <thead>
                 <tr>
@@ -14,7 +15,7 @@
             <tbody>
                 
                 <!-- When using pdo::fetch_assoc, the pdostatement returns an array indexed by column name  -->
-                <?php while($row = $statement->fetch(PDO::FETCH_ASSOC)) : ?>
+                <?php foreach($data as $row) : ?>
                 <tr>
                     <td onClick="onIdClicked(this)"><?php echo htmlspecialchars($row['id']); ?></td>
                     <td><?php echo htmlspecialchars($row['NumberOfTrees']); ?></td>
@@ -24,11 +25,11 @@
                         <form method="post">
                             <input type="hidden" name="fieldID">
                             <input type="hidden" name="delete" value="delete">
-                            <button type="submit" class="btn btn-outline-danger" style="border-color: #d5a3a8; color: #b76870;" disabled>Delete</button>
+                            <button type="submit" onclick="deleteButtonHandler()" class="btn btn-outline-danger" style="border-color: #d5a3a8; color: #b76870;" disabled>Delete</button>
                         </form>
                     </td>
                 </tr>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
 
@@ -51,7 +52,6 @@
             <div class="col-auto mt-3">
                 <input type="submit" name="submit" class="btn btn-primary mb-3" value="Save Fields">
             </div>
-
         </form>
         
     </div>
