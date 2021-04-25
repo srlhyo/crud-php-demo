@@ -1,7 +1,6 @@
         
         <h2 class="my-3">The last 8 Fields</h2>
         <small>***click on the id of the field you wish to delete</small>
-        <small><?php echo $isError ? $errorMessage : ""; ?></small>
         <table id="mytable" class="table table-striped table-bordered" style="width:300px;">
             <thead>
                 <tr>

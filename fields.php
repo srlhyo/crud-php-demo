@@ -1,24 +1,4 @@
-<?php 
-// api ==== api endpoints /// noface
-$apikeys = [
-    "api", 
-    "api2"
-];
-
-
-// connect php to postgreSQL Database using PDO
-
-$host='localhost';
-$db = 'weathersafe';
-$username = 'postgres';
-$password = '';
-
-
-$dsn = "pgsql:host=$host;port=5432;dbname=$db;user=$username;password=$password";
-
-$access = false;
-
-?>
+<?php include "controller.php"; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -44,105 +24,15 @@ $access = false;
             <div class="col-auto align-self-end">
                 <input type="submit" name="submit" class="btn btn-primary" id="getFields" value="Get Fields">
             </div>
-            <?php if(isset($_GET["apikey"]) && in_array($_GET["apikey"], $apikeys)) : ?>
-                <small class="text-success" id="success"><?php echo "{'success': 'Key provided'}" ?></small>
-            <?php $access= true;?>
-            <?php else : ?>
-                <?php if($_GET["submit"] == "Get Fields") : ?>
-                    <small class="text-danger" id="error"><?php echo "{'error': 'Invalid Key!'}" ?></small>
-                <?php endif; ?>
+            <?php if($showStatus) : ?>
+                <small class="<?= $isApiCorrect ? "text-success" : "text-danger" ?>" id="isApiCorrect"><?php echo $isApiCorrect ? "Success" : "Error"?></small>
             <?php endif; ?>
         </form>
-
-        <!-- Loading the rest of the body content -->
-    <?php
-        if($access) {
-            $isError = false;
-            $errorMessage = "";
-
-            if(isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Add Fields") {
-                
-                $numberOfTrees = $_POST['numberOfTrees'];
-                $ageOfTrees = $_POST['ageOfTrees'];
-
-                $statement->closeCursor();
-
-                $add_field = "insert into \"Fields\" (\"NumberOfTrees\", \"AgeOfTrees\")
-                values ('$numberOfTrees', '$ageOfTrees')"; 
-
-                $statement = $conn->query($add_field);
-
-                if($statement == false) {
-                    $isError = true;
-                    $errorMessage = "Dabase couldn't be reached";
-                }
-            }
-
-            if(isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Save Fields") {
-
-                $numberOfTrees = $_POST['numberOfTrees'];
-                $ageOfTrees = $_POST['ageOfTrees'];
-                $fieldID = $_POST['fieldID'];
-
-                $statement->closeCursor();
-
-                $edit_field = "update \"Fields\" 
-                set \"NumberOfTrees\" = $numberOfTrees,
-                \"AgeOfTrees\" = $ageOfTrees
-                where id = $fieldID"; 
-
-                $statement = $conn->query($edit_field);
-
-                if($statement == false) {
-                    $isError = true;
-                    $errorMessage = "Dabase couldn't be reached";
-                }
-            }
-
-            if(isset($_POST["delete"])) {
-                // create a PostgreSQL database connection
-                $fieldID = $_POST['fieldID'];
-
-                $delete_field = "delete from \"Fields\" 
-                where id = $fieldID";
-
-                $conn = new PDO($dsn);
-                $statement = $conn->query($delete_field);
-
-                if($statement == false) {
-                    $isError = true;
-                    $errorMessage = "Dabase couldn't be reached";
-                }
-                $statement->closeCursor();
-            }
-
-            // get all fields
-            $get_fields = "select * 
-            from (select * from \"Fields\" f order by \"id\" desc limit 8) as foo
-            order by \"id\" asc;";
-
-            try{
-            // create a PostgreSQL database connection
-            $conn = new PDO($dsn);
-
-            // returns an object containing the result set or false if failing to execute the query
-            $statement = $conn->query($get_fields);
-
-            if($statement == false) {
-                $isError = true;
-                $errorMessage = "Dabase couldn't be reached";
-            }
-            $data = $statement->fetchAll(PDO::FETCH_ASSOC);
-            $statement->closeCursor();
-
-            }catch (PDOException $e){
-            // report error message
-            echo $e->getMessage();
-            }
-            require "main_fields.php"; 
-        }
-    ?>
-
+        <div style="margin-top: 5px;">
+            <small class="text-danger"><?php echo $showError ? $errorMessage : ""; ?></small>
+        </div>
+        
+        <?php if($isApiCorrect && !$showError) { require "main_fields.php";} ?> 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="text/javascript" src="main.js"></script>
 </body>
