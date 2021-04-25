@@ -1,23 +1,16 @@
 <?php
+require_once "database.php";
 // api ==== api endpoints /// noface
 $apikeys = [
     "api", 
     "api2"
 ];
 
-// connect php to postgreSQL Database using PDO
-$host='localhost';
-$db = 'weathersafe';
-$username = 'postgres';
-$password = '';
-
-$dsn = "pgsql:host=$host;port=5432;dbname=$db;user=$username;password=$password";
-
 $showError = false;
 $errorMessage = "";
 
 try {
-    $conn = new PDO($dsn);
+    $db = new Database('localhost', 'weathersafe', 'postgres', '');
 
 } catch (PDOException $e) {
     $showError = true;
@@ -29,14 +22,11 @@ $isApiCorrect = isset($_GET["apikey"]) && in_array($_GET["apikey"], $apikeys);
 $showStatus = isset($_REQUEST["submit"]) && $_REQUEST["submit"] == "Get Fields";
 
 if($isApiCorrect && !$showError) {
-    $close = function($st) {
-        $st->closeCursor();
-    };
-
-    $execute = function ($sql) use(&$conn, &$showError, &$errorMessage) {
+   
+    $execute = function ($sql) use($db, &$showError, &$errorMessage) {
         
         try{
-            $statement = $conn->query($sql);
+            $statement = $db->execute($sql);
 
             if(!$statement) {
                 $showError = true;
@@ -48,7 +38,6 @@ if($isApiCorrect && !$showError) {
 
         }catch (PDOException $e){
             $showError = true;
-            // report error message
             $errorMessage = $e->getMessage();
             return null;
         }

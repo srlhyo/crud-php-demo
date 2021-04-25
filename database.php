@@ -2,13 +2,11 @@
 // connect php to postgreSQL Database using PDO
 
 class Database {
-    private $host='localhost';
-    private $db = 'weathersafe';
-    private $username = 'postgres';
-    private $password = '';
+    private $host;
+    private $db;
+    private $username;
+    private $password;
     private $conn;
-    public $showError;
-    public $errorMessage;
 
     public function __construct($host, $dbname, $username, $password)
     {
@@ -16,13 +14,7 @@ class Database {
         $this->db = $dbname;
         $this->username = $username;
         $this->password = $password;
-
-        try {
-            $this->conn = new PDO($this->dsn());
-        
-        } catch (PDOException $e) {
-            $this->setError($e->getMessage());
-        }
+        $this->conn = new PDO($this->dsn());
     }
 
     public function close($st) {
@@ -30,25 +22,7 @@ class Database {
     }
 
     public function execute($sql) {
-        
-        try{
-            $statement = $this->conn->query($sql);
-            if(!$statement) {
-                $this->setError("Database error");
-                return null;
-            } else {
-                return $statement;
-            }
-
-        }catch (PDOException $e){
-            $this->setError($e->getMessage());
-            return null;
-        }
-    }
-
-    private function setError($message) {
-        $this->showError = true;
-        $this->errorMessage = $message;
+        return $this->conn->query($sql);
     }
 
     private function dsn() {
