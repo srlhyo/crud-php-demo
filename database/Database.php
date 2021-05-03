@@ -16,8 +16,14 @@ class Database {
     public static function execute($sql, $params)
     {
         $statement = self::$conn->prepare($sql);
-        
-        return $statement->execute($params); 
+        $statement->execute($params); 
+
+        // returns an object containing the result set or false if failing to execute the query
+        if($statement != null && $params == []) {
+            $data = $statement->fetchAll(PDO::FETCH_ASSOC);
+            static::close($statement);
+        }
+        return $data;
     }
 
     private static function dsn()

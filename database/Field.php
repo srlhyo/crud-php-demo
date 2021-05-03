@@ -1,5 +1,5 @@
 <?php
-require_once "model.php";
+require_once "Model.php";
 
 class Field extends Model {
      protected static $tableName = "Fields";

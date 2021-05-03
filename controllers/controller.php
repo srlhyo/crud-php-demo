@@ -45,7 +45,7 @@ if($isApiCorrect && !$showError) {
 
     if($theSubmitedFormIsToDeleteAnObject) {
         $fieldID = $_POST['fieldID'];
-        Field::delete($id);
+        Field::delete($fieldID);
     }
     
     

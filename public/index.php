@@ -1,9 +1,9 @@
 <?php
     try {
         $env = require "../env.php";
-        require "../database/database.php";
+        require "../database/Database.php";
         Database::initialize($env["dbconnection"]);
-        require "../database/polygon.php";
+        require "../database/Field.php";
         include "../controllers/controller.php";
         include "layout.php";
     } catch(\Exception $e) {

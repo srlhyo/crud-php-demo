@@ -1,6 +1,6 @@
 <?php
-// models which Polygons can be instantiated from
-require_once "database.php";
+// models which Fields can be instantiated from
+require_once "Database.php";
 
 class Model extends Database {
     protected static $tableName = null;
@@ -12,14 +12,7 @@ class Model extends Database {
     public static function selectAll()
     {    
         $sql = static::generateRawSql_selectAll();
-
-        // returns an object containing the result set or false if failing to execute the query
-        $statement = static::exec($sql);
-        if($statement != null) {
-            $data = $statement->fetchAll(PDO::FETCH_ASSOC);
-            static::close($statement);
-        }
-        return $data;
+        return static::exec($sql);
     }
 
     private static function generateRawSql_selectAll() {
@@ -32,10 +25,7 @@ class Model extends Database {
     public static function delete($toBeSearchedBy)
     {
         $sql = static::generateRawSql_deleteWhere();
-        $statement = static::execute($sql,[$toBeSearchedBy]);
-        if($statement != null) {
-            static::close($statement);
-        }
+        static::execute($sql,[$toBeSearchedBy]);
         return null;
     }
 
